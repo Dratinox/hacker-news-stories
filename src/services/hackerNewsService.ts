@@ -3,7 +3,6 @@ import HttpStatusCodes from "http-status-codes";
 import axios from "axios";
 import { ErrorHandler } from "../middleware/error";
 import { DI } from "../server";
-import { StoryComment } from "../entities/StoryComment";
 
 export default class HackerNewsService {
     public readonly apiUrl: string;
@@ -19,28 +18,20 @@ export default class HackerNewsService {
             }
             return response.data;
         } catch (err) {
-            if (err.message === "This hacker news object is not a story") {
+            if ("statusCode" in err) {
                 throw err;
             }
-            return null;
+            throw new ErrorHandler(HttpStatusCodes.INTERNAL_SERVER_ERROR, "Failed to fetch story");
         }
     }
 
     public async fetchCommentsRecursively(commentId: number, storyId: number): Promise<void> {
         const comment = await this.fetchComment(commentId);
 
-        try {
-            const createdComment = DI.em.create(StoryComment, {
-                id: comment.id,
-                text: comment.text,
-                author: comment.by,
-                time: comment.time * 1000,
-                story: storyId,
-                parentId: comment.parent,
-                commentStoryId: storyId,
-            });
-            await DI.em.nativeInsert(createdComment);
         // TODO: In case of error poll job to fetch this comment again ---> optional parameter to not go into infinite loop?
+        try {
+            const { storyService } = DI;
+            await storyService.createComment(comment, storyId);
         } catch (err) {
             return;
         }

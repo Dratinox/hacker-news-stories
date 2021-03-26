@@ -7,7 +7,11 @@ import * as dotenv from "dotenv";
 import auth from "./routes/api/auth";
 import user from "./routes/api/user";
 import collection from "./routes/api/collection";
+import search from "./routes/api/search";
 import { handleError, ErrorHandler } from "./middleware/error";
+import ElasticSearchService from "./services/elasticSearchService";
+import CollectionService from "./services/collectionService";
+import StoryService from "./services/StoryService";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -16,6 +20,9 @@ export const DI = {} as {
     orm: MikroORM;
     em: EntityManager;
     hackerNewsService: HackerNewsService;
+    elasticSearchService: ElasticSearchService;
+    collectionService: CollectionService;
+    storyService: StoryService;
 };
 
 (async () => {
@@ -24,6 +31,9 @@ export const DI = {} as {
     DI.orm = await MikroORM.init();
     DI.em = DI.orm.em;
     DI.hackerNewsService = new HackerNewsService();
+    DI.elasticSearchService = new ElasticSearchService();
+    DI.collectionService = new CollectionService();
+    DI.storyService = new StoryService();
 
     // Express configuration
     app.set("port", process.env.PORT || 5000);
@@ -40,6 +50,7 @@ export const DI = {} as {
     app.use("/api/auth", auth);
     app.use("/api/user", user);
     app.use("/api/collection", collection);
+    app.use("/api/search", search);
 
     app.use((err: ErrorHandler, req: express.Request, res: express.Response, next: express.NextFunction) => {
         handleError(err, res);

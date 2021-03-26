@@ -5,10 +5,7 @@ import Request from "../../types/Request";
 import { validationResult, check } from "express-validator/check";
 import { DI } from "../../server";
 import auth from "../../middleware/auth";
-import { StoryCollection } from "../../entities/StoryCollection";
-import { Story } from "../../entities/Story";
 import { ErrorHandler } from "../../middleware/error";
-import { commentQueue } from "../../queues/commentQueue";
 
 const router: Router = Router();
 
@@ -29,33 +26,12 @@ router.post(
         const { userId } = req;
 
         try {
-            const { em } = DI;
+            const { em, collectionService, storyService } = DI;
 
-            let collection = await em.findOne(StoryCollection, { name, ownerId: userId }, ["stories"]);
-            if (!collection) {
-                collection = em.create(StoryCollection, { name, ownerId: userId, user: userId });
-                await em.persistAndFlush(collection);
-            }
+            const collection = await collectionService.findOneByNameOrCreate(name, userId);
 
-            const existingStory = await em.findOne(Story, { id });
-            if (existingStory) {
-                collection.stories = [...collection.stories, existingStory];
-            } else {
-                const story = await DI.hackerNewsService.getStory(id);
-
-                const createdStory = em.create(Story, {
-                    id: story.id,
-                    title: story.title,
-                    author: story.by,
-                    time: story.time * 1000,
-                    url: story.url,
-                    descendants: story.descendants,
-                    collection: collection.id,
-                });
-                await em.persistAndFlush(createdStory);
-                collection.stories = [...collection.stories, createdStory];
-                await commentQueue.add({ id: id, kids: story.kids });
-            }
+            const story = await storyService.findOneOrCreate(id, collection.id);
+            collection.stories = [...collection.stories, story];
 
             await em.persistAndFlush(collection);
 
@@ -77,9 +53,9 @@ router.get("/", auth, async (req: Request, res: Response, next: NextFunction) =>
     const { userId } = req;
 
     try {
-        const { em } = DI;
+        const { collectionService } = DI;
 
-        const collections = await em.find(StoryCollection, { ownerId: userId });
+        const collections = await collectionService.find(userId);
 
         return res.json(collections);
     } catch (err) {
@@ -99,9 +75,9 @@ router.get("/:id", auth, async (req: Request, res: Response, next: NextFunction)
     const { userId } = req;
 
     try {
-        const { em } = DI;
+        const { collectionService } = DI;
 
-        const collection = await em.findOne(StoryCollection, { id: +id, ownerId: userId }, ["stories"]);
+        const collection = await collectionService.findOne(+id, userId);
 
         return res.json(collection);
     } catch (err) {
@@ -127,18 +103,11 @@ router.get(
         }
 
         const { id } = req.params;
-        const { name } = req.body;
         const { userId } = req;
 
         try {
-            const { em } = DI;
-
-            const collectionNameExists = await em.findOne(StoryCollection, { ownerId: userId, name });
-            if (collectionNameExists) {
-                throw new ErrorHandler(HttpStatusCodes.BAD_REQUEST, "You already have collection with given name");
-            }
-
-            const collection = await em.findOne(StoryCollection, { id: +id, ownerId: userId }, ["stories"]);
+            const { collectionService } = DI;
+            const collection = await collectionService.update(+id, userId, req.body);
 
             return res.json(collection);
         } catch (err) {
