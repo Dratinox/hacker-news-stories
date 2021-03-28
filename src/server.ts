@@ -1,6 +1,7 @@
 import bodyParser from "body-parser";
 import express from "express";
 import { MikroORM, EntityManager } from "@mikro-orm/core";
+import { getConfig } from "./mikro-orm.config";
 
 import * as dotenv from "dotenv";
 import auth from "./routes/api/auth";
@@ -26,15 +27,17 @@ export const DI = {} as {
 (async () => {
     dotenv.config();
 
-    DI.orm = await MikroORM.init();
+    const config = getConfig();
+    DI.orm = await MikroORM.init(config);
+
+    await DI.orm.getMigrator().up();
+
     DI.em = DI.orm.em;
     DI.hackerNewsService = new HackerNewsService();
     DI.elasticSearchService = new ElasticSearchService();
     DI.collectionService = new CollectionService();
     DI.storyService = new StoryService();
     DI.userService = new UserService();
-
-    await DI.orm.getMigrator().up();
 
     // Express configuration
     app.set("port", process.env.PORT || 5000);

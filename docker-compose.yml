@@ -40,4 +40,3 @@ volumes:
     driver: local
   sl-postgres:
     driver: local
-
