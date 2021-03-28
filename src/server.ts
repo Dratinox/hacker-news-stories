@@ -34,6 +34,8 @@ export const DI = {} as {
     DI.storyService = new StoryService();
     DI.userService = new UserService();
 
+    await DI.orm.getMigrator().up();
+
     // Express configuration
     app.set("port", process.env.PORT || 5000);
     app.use(bodyParser.json());
