@@ -1,7 +1,6 @@
 import bodyParser from "body-parser";
 import express from "express";
 import { MikroORM, EntityManager } from "@mikro-orm/core";
-import HackerNewsService from "./services/hackerNewsService";
 
 import * as dotenv from "dotenv";
 import auth from "./routes/api/auth";
@@ -9,10 +8,7 @@ import user from "./routes/api/user";
 import collection from "./routes/api/collection";
 import search from "./routes/api/search";
 import { handleError, ErrorHandler } from "./middleware/error";
-import ElasticSearchService from "./services/elasticSearchService";
-import CollectionService from "./services/collectionService";
-import StoryService from "./services/StoryService";
-import UserService from "./services/userService";
+import { CollectionService, ElasticSearchService, HackerNewsService, StoryService, UserService } from "./services";
 
 const app = express();
 const port = process.env.PORT || 3000;

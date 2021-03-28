@@ -4,7 +4,7 @@ import axios from "axios";
 import { ErrorHandler } from "../middleware/error";
 import { DI } from "../server";
 
-export default class HackerNewsService {
+export class HackerNewsService {
     public readonly apiUrl: string;
     constructor() {
         this.apiUrl = process.env.HACKER_NEWS_API_URL;

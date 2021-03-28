@@ -1,11 +1,11 @@
 import elastic from "elasticsearch";
-import { IStory, IElasticItem, IStoryComment, SearchResponse } from "../interfaces";
+import { IStory, IElasticItem, IStoryComment, ISearchResponse } from "../interfaces";
 import { DI } from "../server";
 
 // Default elastic index
 const index = "hacker-news";
 
-export default class ElasticSearchService {
+export class ElasticSearchService {
     private readonly client: elastic.Client;
     constructor() {
         this.client = new elastic.Client({
@@ -87,7 +87,7 @@ export default class ElasticSearchService {
         await this.client.index(doc);
     }
 
-    public async fulltextSearch(term: string, ownerId: number, collectionId?: number): Promise<SearchResponse<IElasticItem>> {
+    public async fulltextSearch(term: string, ownerId: number, collectionId?: number): Promise<ISearchResponse<IElasticItem>> {
         const { collectionService } = DI;
         const storyIds = await collectionService.findAllStoriesForUser(ownerId, collectionId);
 

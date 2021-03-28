@@ -1,10 +1,9 @@
 import HttpStatusCodes from "http-status-codes";
 import { DI } from "../server";
-import { StoryCollection } from "../entities/StoryCollection";
 import { ErrorHandler } from "../middleware/error";
-import { Story } from "../entities/Story";
+import { Story, StoryCollection } from "../entities";
 
-export default class CollectionService {
+export class CollectionService {
     public async findOneByNameOrCreate(name: string, ownerId: number): Promise<StoryCollection> {
         const { em } = DI;
 

@@ -1,21 +1,21 @@
-interface Explanation {
+interface IExplanation {
   value: number;
   description: string;
-  details: Explanation[];
+  details: IExplanation[];
 }
 
-interface ShardsResponse {
+interface IShardsResponse {
     total: number;
     successful: number;
     failed: number;
     skipped: number;
 }
 
-export interface SearchResponse<T> {
+export interface ISearchResponse<T> {
     took: number;
     timed_out: boolean;
     _scroll_id?: string;
-    _shards: ShardsResponse;
+    _shards: IShardsResponse;
     hits: {
         total: number;
         max_score: number;
@@ -26,7 +26,7 @@ export interface SearchResponse<T> {
             _score: number;
             _source: T;
             _version?: number;
-            _explanation?: Explanation;
+            _explanation?: IExplanation;
             fields?: any;
             highlight?: any;
             inner_hits?: any;

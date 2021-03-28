@@ -1,6 +1,5 @@
 import { Entity, Property, ManyToOne } from "@mikro-orm/core";
-import { Story } from "./Story";
-import { BaseEntity } from "./BaseEntity";
+import { BaseEntity, Story } from ".";
 
 @Entity()
 export class StoryComment extends BaseEntity {

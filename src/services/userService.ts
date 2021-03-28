@@ -1,12 +1,12 @@
 import HttpStatusCodes from "http-status-codes";
 import { DI } from "../server";
-import { User } from "../entities/User";
+import { User } from "../entities";
 import { ErrorHandler } from "../middleware/error";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import Payload from "../types/Payload";
 
-export default class UserService {
+export class UserService {
     constructor() {
         this.initTestingUser();
     }

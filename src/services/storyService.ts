@@ -1,10 +1,9 @@
-import { Story } from "../entities/Story";
 import { DI } from "../server";
 import { commentQueue } from "../queues/commentQueue";
 import { IStoryComment } from "../interfaces";
-import { StoryComment } from "../entities/StoryComment";
+import { Story, StoryComment } from "../entities";
 
-export default class StoryService {
+export class StoryService {
     public async findOneOrCreate(id: number, collectionId: number): Promise<Story> {
         const { em, elasticSearchService, hackerNewsService } = DI;
         const existingStory = await em.findOne(Story, { id });
