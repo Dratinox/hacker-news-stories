@@ -12,13 +12,13 @@ const router: Router = Router();
 // @desc    Performs a full-text search on ElasticSearch index
 // @access  Private
 router.post("/", auth, async (req: Request, res: Response, next: NextFunction) => {
-    const { id } = req.body;
+    const { collectionId, term } = req.body;
     const { userId } = req;
 
     try {
         const { elasticSearchService } = DI;
 
-        const response = await elasticSearchService.fulltextSearch("26148527", 3);
+        const response = await elasticSearchService.fulltextSearch(term, userId, collectionId ?? undefined);
         return res.json(response);
     } catch (err) {
         if ("statusCode" in err) {

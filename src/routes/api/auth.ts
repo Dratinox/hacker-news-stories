@@ -1,14 +1,10 @@
-import bcrypt from "bcryptjs";
 import { Router, Response, NextFunction } from "express";
 import { check, validationResult } from "express-validator/check";
 import HttpStatusCodes from "http-status-codes";
-import jwt from "jsonwebtoken";
 
 import auth from "../../middleware/auth";
-import Payload from "../../types/Payload";
 import Request from "../../types/Request";
 import { DI } from "../../server";
-import { User } from "../../entities/User";
 import { ErrorHandler } from "../../middleware/error";
 
 const router: Router = Router();
@@ -18,8 +14,10 @@ const router: Router = Router();
 // @access  Private
 router.get("/", auth, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { em } = DI;
-        const { id, username } = await em.getRepository(User).findOne(req.userId);
+        const { userService } = DI;
+        const { userId } = req;
+
+        const { id, username } = await userService.findOne(userId);
         res.json({ id, username });
     } catch (err) {
         throw new ErrorHandler(HttpStatusCodes.INTERNAL_SERVER_ERROR, "Failed to retrieve user");
@@ -41,31 +39,12 @@ router.post(
             return res.status(HttpStatusCodes.BAD_REQUEST).json({ errors: errors.array() });
         }
 
-        const { em } = DI;
-
+        const { userService } = DI;
         const { username, password } = req.body;
 
         try {
-            const user = await em.getRepository(User).findOne({ username });
-            if (!user) {
-                throw new ErrorHandler(HttpStatusCodes.NOT_FOUND, "User doesn't exist");
-            }
-
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                throw new ErrorHandler(HttpStatusCodes.UNAUTHORIZED, "Wrong password");
-            }
-
-            const payload: Payload = {
-                userId: user.id,
-            };
-
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION }, (err, token) => {
-                if (err) {
-                    throw err;
-                }
-                res.json({ token });
-            });
+            const token = await userService.login(username, password);
+            res.json({ token });
         } catch (err) {
             if ("statusCode" in err) {
                 next(err);

@@ -24,6 +24,7 @@ export default class StoryService {
             collection: collectionId,
         });
         await em.persistAndFlush(createdStory);
+        em.clear();
 
         await commentQueue.add({ id: id, kids: story.kids });
         await elasticSearchService.indexStory(story);

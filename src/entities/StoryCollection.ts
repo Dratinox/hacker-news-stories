@@ -1,4 +1,4 @@
-import { Entity, Property, ManyToOne, OneToMany, LoadStrategy } from "@mikro-orm/core";
+import { Entity, Property, ManyToOne, ManyToMany, Collection } from "@mikro-orm/core";
 import { BaseEntity } from "./BaseEntity";
 import { User } from "./User";
 import { Story } from "./Story";
@@ -14,6 +14,6 @@ export class StoryCollection extends BaseEntity {
     @ManyToOne(() => User)
     user: User;
 
-    @OneToMany(() => Story, (story) => story.collection)
-    stories: Story[];
+    @ManyToMany(() => Story, (story) => story.collections, { owner: true })
+    stories = new Collection<Story>(this);
 }

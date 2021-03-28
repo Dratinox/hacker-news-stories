@@ -12,6 +12,7 @@ import { handleError, ErrorHandler } from "./middleware/error";
 import ElasticSearchService from "./services/elasticSearchService";
 import CollectionService from "./services/collectionService";
 import StoryService from "./services/StoryService";
+import UserService from "./services/userService";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -23,6 +24,7 @@ export const DI = {} as {
     elasticSearchService: ElasticSearchService;
     collectionService: CollectionService;
     storyService: StoryService;
+    userService: UserService;
 };
 
 (async () => {
@@ -34,6 +36,7 @@ export const DI = {} as {
     DI.elasticSearchService = new ElasticSearchService();
     DI.collectionService = new CollectionService();
     DI.storyService = new StoryService();
+    DI.userService = new UserService();
 
     // Express configuration
     app.set("port", process.env.PORT || 5000);

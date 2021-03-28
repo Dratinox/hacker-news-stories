@@ -10,7 +10,8 @@
     "server": "concurrently \"npm run watch-tsc\" \"npm run watch-deploy\"",
     "start": "npm run deploy",
     "dev": "nodemon dist/server.js",
-    "heroku-postbuild": "npm run tsc"
+    "heroku-postbuild": "npm run tsc",
+    "test": "newman run test-api.json"
   },
   "dependencies": {
     "@mikro-orm/core": "^4.5.0",
@@ -48,6 +49,7 @@
     "@types/jsonwebtoken": "^8.3.2",
     "@types/node-fetch": "^2.5.8",
     "concurrently": "^4.1.0",
+    "newman": "^5.2.2",
     "nodemon": "^1.19.4",
     "ts-node": "^9.1.1"
   },

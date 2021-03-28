@@ -87,14 +87,17 @@ export default class ElasticSearchService {
         await this.client.index(doc);
     }
 
-    public async fulltextSearch(term: string, collectionId: number): Promise<SearchResponse<IElasticItem>> {
-        const { em } = DI;
+    public async fulltextSearch(term: string, ownerId: number, collectionId?: number): Promise<SearchResponse<IElasticItem>> {
+        const { collectionService } = DI;
+        const storyIds = await collectionService.findAllStoriesForUser(ownerId, collectionId);
 
         const response = await this.client.search<IElasticItem>({
             index,
             body: {
                 query: {
-                    match: { storyId: term },
+                    bool: {
+                        must: [{ match: { content: { query: term, fuzziness: "AUTO" } } }, { terms: { storyId: storyIds } }],
+                    },
                 },
             },
         });

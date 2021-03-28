@@ -24,7 +24,16 @@ services:
     ports:
       - 9200:9200
   redis:
+    container_name: hn-redis
     image: "redis:alpine"
+    ports:
+      - 6379:6379
+  hacker_news_api:
+    build: .
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
 
 volumes:
   sl-elastic:

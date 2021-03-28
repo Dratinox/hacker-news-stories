@@ -10,8 +10,8 @@ import { ErrorHandler } from "../../middleware/error";
 const router: Router = Router();
 
 // @route   POST api/collection
-// @desc    Register user and store faceId if picture is provided
-// @access  Public
+// @desc    Adds story to collection and creates it if it doesn't exist
+// @access  Private
 router.post(
     "/",
     auth,
@@ -26,16 +26,15 @@ router.post(
         const { userId } = req;
 
         try {
-            const { em, collectionService, storyService } = DI;
+            const { collectionService, storyService } = DI;
 
             const collection = await collectionService.findOneByNameOrCreate(name, userId);
 
             const story = await storyService.findOneOrCreate(id, collection.id);
-            collection.stories = [...collection.stories, story];
 
-            await em.persistAndFlush(collection);
+            const collectionWithStories = await collectionService.addStoryToCollection(collection, story);
 
-            return res.json(collection);
+            return res.json(collectionWithStories);
         } catch (err) {
             if ("statusCode" in err) {
                 next(err);
@@ -92,7 +91,7 @@ router.get("/:id", auth, async (req: Request, res: Response, next: NextFunction)
 // @route   PUT api/collection:id
 // @desc    Updates collection with given id
 // @access  Private
-router.get(
+router.put(
     "/:id",
     auth,
     [check("name", "Collection name needs to have at least 3 characters").isLength({ min: 3 })],
@@ -119,5 +118,25 @@ router.get(
         }
     },
 );
+
+// @route   DELETE api/collection:id
+// @desc    Deletes collection with given id
+// @access  Private
+router.delete("/:id", auth, async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params;
+
+    try {
+        const { collectionService } = DI;
+        const deleteResponse = await collectionService.delete(+id);
+
+        return res.json(deleteResponse);
+    } catch (err) {
+        if ("statusCode" in err) {
+            next(err);
+        } else {
+            throw new ErrorHandler(HttpStatusCodes.INTERNAL_SERVER_ERROR, "Failed to delete collection");
+        }
+    }
+});
 
 export default router;

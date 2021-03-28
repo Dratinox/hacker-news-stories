@@ -1,19 +1,15 @@
 import { Router, Response, NextFunction } from "express";
 import HttpStatusCodes from "http-status-codes";
-import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 
-import Payload from "../../types/Payload";
 import Request from "../../types/Request";
 import { validationResult, check } from "express-validator/check";
 import { DI } from "../../server";
-import { User } from "../../entities/User";
 import { ErrorHandler } from "../../middleware/error";
 
 const router: Router = Router();
 
 // @route   POST api/user
-// @desc    Register user and store faceId if picture is provided
+// @desc    Register user
 // @access  Public
 router.post(
     "/",
@@ -30,29 +26,10 @@ router.post(
         const { username, password } = req.body;
 
         try {
-            const { em } = DI;
+            const { userService } = DI;
 
-            const user = await em.findOne(User, { username });
-            if (user) {
-                throw new ErrorHandler(HttpStatusCodes.BAD_REQUEST, "User already exists");
-            }
-
-            const salt = await bcrypt.genSalt(10);
-            const hashedPassword = await bcrypt.hash(password, salt);
-
-            const createdUser = em.getRepository(User).create({ username, password: hashedPassword });
-            await em.persistAndFlush(createdUser);
-
-            const payload: Payload = {
-                userId: createdUser.id,
-            };
-
-            jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRATION }, (err, token) => {
-                if (err) {
-                    throw err;
-                }
-                res.json({ token });
-            });
+            const token = userService.register(username, password);
+            res.json({ token });
         } catch (err) {
             if ("statusCode" in err) {
                 next(err);

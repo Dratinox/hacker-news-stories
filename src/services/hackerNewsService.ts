@@ -25,6 +25,7 @@ export default class HackerNewsService {
         }
     }
 
+    // TODO: Could recursively return all comments in one array and then use ElasticSearch Bulk API to index comments
     public async fetchCommentsRecursively(commentId: number, storyId: number): Promise<void> {
         const comment = await this.fetchComment(commentId);
 
